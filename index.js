@@ -1,11 +1,5 @@
 const puppeteer = require('puppeteer');
 
-function delay(time) {
-  return new Promise(resolv => {
-    setTimeout(() => resolv(), time)
-  });
-}
-
 async function runTest(browser) {
   const page = await browser.newPage();
   await page.goto('http://speed.aussiebroadband.com.au/');
@@ -23,19 +17,22 @@ async function runTest(browser) {
     throw new Error("Speed test frame not found");
   }
 
+  console.log("Starting speed test");
   await speedtestFrame.click('button[aria-label="start your speedtest"]');
+  console.log("Speed test started");
   await speedtestFrame.waitForSelector('.share-assembly', {
-    // One minute timeout on the test.
-    timeout: 60 * 1000
+    // Two minutes timeout on the test.
+    timeout: 60 * 1000 * 2
   });
+  console.log("Speed test finished. Allowing results to flush for 10s.");
 
   // Allow to flush metrics to ABB
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(10000);
 }
 
 async function main() {
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     args: [
       '--disable-web-security',
       '--disable-features=IsolateOrigins,site-per-process'
